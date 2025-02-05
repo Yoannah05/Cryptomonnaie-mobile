@@ -1,0 +1,33 @@
+WEB API Crypto Frontoffice
+    Base :
+    Utiliser base présente
+
+        Dépot, retrait :
+            ☐ Ajouter isValide
+            ☐ Ajouter code_validation
+
+    Back:
+    Note : Donner d'abord id_utilisateur dans le back, puis dans le controller utiliser fonction avec id dans token
+
+    Profil_Service :
+        ☐ Fonction get_All_Wallets(id_utilisateur)
+        ☐ Fonction get_Basic_Datas(id_utilisateur)
+
+    Depot_Retrait_Service :
+        ☐ Fonction deposer(id_utilisateur, valeur)
+            Ajoute une transaction_monnaie à valider
+            Ajouter historique à valider
+
+        ☐ Fonction historique_achat_vente(id_utilisateur)
+        Base:
+            Ajouter view pour voir les achats soit les historiques avec une transaction_monnaie ET une transaction_result où transaction monnaie is_sortie (je sais pas hoe aona zany am NoSQL)
+            Ajouter view pour voir les ventes soit les historiques avec une transaction_monnaie ET une transaction_result où transaction monnaie is_entree
+
+    Crypto_Service :
+        ☐ Créer un service temporaire dans firebase pour générer les variations de cryptomonnaie (ce sera dans l'appli locale à la fin)
+        ☐ Chercher un moyen pour récupérer l'historique des variations de cryptomonnaie et afficher en temps réel
+
+    Intégration :
+        Toutes les fonctions à appeler avec une authentification seront dans un controller Authentified
+        ☐ Récupérer l'id_utilisateur à partir du mail lié au token
+        ☐ Créer un endpoint pour chaque fonction et appeler avec l'id_utilisateur et les données des formulaires

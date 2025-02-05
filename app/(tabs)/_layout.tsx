@@ -7,6 +7,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -33,11 +34,34 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="explore"
+      
+       <Tabs.Screen
+      name="cryptoList"
+      options={{
+        title: 'Crypto List',
+        tabBarIcon: ({ color }) => <Ionicons size={28} name="list" color={color} />, 
+      }}
+    />
+    <Tabs.Screen
+      name="cours"
+      options={{
+        title: 'Current Price',
+        tabBarIcon: ({ color }) => <Ionicons size={28} name="cash" color={color} />, // Cash or price-related icon
+      }}
+    />
+    <Tabs.Screen
+      name="transaction"
+      options={{
+        title: 'Transactions',
+        tabBarIcon: ({ color }) => <Ionicons size={28} name="wallet" color={color} />, // Wallet icon for crypto transactions
+      }}
+    />
+
+    <Tabs.Screen
+        name="profile"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="person" color={color} />, 
         }}
       />
     </Tabs>
