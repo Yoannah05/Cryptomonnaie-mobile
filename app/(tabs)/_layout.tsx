@@ -28,7 +28,7 @@ export default function TabLayout() {
         }),
       }}>
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
@@ -46,14 +46,14 @@ export default function TabLayout() {
       name="cours"
       options={{
         title: 'Current Price',
-        tabBarIcon: ({ color }) => <Ionicons size={28} name="cash" color={color} />, // Cash or price-related icon
+        tabBarIcon: ({ color }) => <Ionicons size={28} name="cash" color={color} />, 
       }}
     />
     <Tabs.Screen
       name="transaction"
       options={{
         title: 'Transactions',
-        tabBarIcon: ({ color }) => <Ionicons size={28} name="wallet" color={color} />, // Wallet icon for crypto transactions
+        tabBarIcon: ({ color }) => <Ionicons size={28} name="wallet" color={color} />,
       }}
     />
 
