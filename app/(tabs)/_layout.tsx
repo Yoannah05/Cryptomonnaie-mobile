@@ -21,7 +21,6 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
           },
           default: {},
@@ -34,34 +33,59 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
-      
-       <Tabs.Screen
-      name="cryptoList"
-      options={{
-        title: 'Crypto List',
-        tabBarIcon: ({ color }) => <Ionicons size={28} name="list" color={color} />, 
-      }}
-    />
-    <Tabs.Screen
-      name="cours"
-      options={{
-        title: 'Current Price',
-        tabBarIcon: ({ color }) => <Ionicons size={28} name="cash" color={color} />, 
-      }}
-    />
-    <Tabs.Screen
-      name="transaction"
-      options={{
-        title: 'Transactions',
-        tabBarIcon: ({ color }) => <Ionicons size={28} name="wallet" color={color} />,
-      }}
-    />
 
-    <Tabs.Screen
+      <Tabs.Screen
+        name="cryptoList"
+        options={{
+          title: 'Crypto List',
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="cash" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="cours"
+        options={{
+          title: 'Cours',
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="bar-chart" color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="transaction"
+        options={{
+          title: 'Dépôt/Retrait',
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="arrow-down-circle" color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="portefeuille"
+        options={{
+          title: 'Portefeuille',
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="wallet" color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: 'Notifications',
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="notifications" color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="favoris"
+        options={{
+          title: 'Favoris',
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="star" color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <Ionicons size={28} name="person" color={color} />, 
+          tabBarIcon: ({ color }) => <Ionicons size={28} name="person" color={color} />,
         }}
       />
     </Tabs>

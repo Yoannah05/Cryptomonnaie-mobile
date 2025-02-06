@@ -6,20 +6,21 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useRouter } from 'expo-router';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth, db } from '../config/firebase';
-import { getUserDetail} from './services/firebaseService';
+import { auth, db } from '@/config/firebase';
+import FirebaseService from '@/app/services/firebaseService';
 
 export default function Index() {
   const router = useRouter();
 
-  onAuthStateChanged(auth, async(user) => {
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
       console.log(user);
-      getUserDetail(user?.uid);
-      router.replace('/(tabs)/home')
+      const userData = await FirebaseService.getUserData(user?.uid);
+      console.log("User Data:", userData);
+      router.replace('/(tabs)/home');
     }
-  })
-
+  });
+  
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
