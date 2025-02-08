@@ -1,50 +1,81 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { useState } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { auth, db } from '@/config/firebase';
+import { collection, addDoc, Timestamp, doc } from 'firebase/firestore';
 
 export default function TransactionScreen() {
+  const [montant, setMontant] = useState('');
+
+  const handleDepot = async () => {
+    if (!montant || isNaN(Number(montant))) {
+      Alert.alert('Erreur', 'Veuillez saisir un montant valide.');
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (!user) {
+      Alert.alert('Erreur', 'Utilisateur non connecté.');
+      return;
+    }
+
+    try {
+      // Ajouter la transaction dans transaction_monnaie
+      const transactionRef = await addDoc(collection(db, 'transaction_monnaie'), {
+        valeur: Number(montant),
+        is_entree: true,
+        is_valide: false,
+        id_utilisateur: `projects/crypto-2025/databases/(default)/documents/users/${user.uid}`,
+      });
+
+      // Ajouter une entrée dans historique_individu
+      await addDoc(collection(db, 'historique_individu'), {
+        date_historique: Timestamp.now(), // Date actuelle
+        id_transaction_monnaie: `projects/crypto-2025/databases/(default)/documents/transaction_monnaie/${transactionRef.id}`,
+      });
+
+      Alert.alert('Succès', 'Dépôt enregistré avec succès ! Vérifiez votre email pour confirmation.');
+      setMontant('');
+    } catch (error) {
+      console.error('Erreur lors du dépôt :', error);
+      Alert.alert('Erreur', 'Une erreur est survenue lors du dépôt.');
+    }
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">This is the profile screen</ThemedText>
-        <ThemedText>
-          this is a test <ThemedText type="defaultSemiBold">yazzz</ThemedText> right?
-          Press{' '}
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ThemedView style={styles.container}>
+      <ThemedText type="title">Faire un dépôt</ThemedText>
+      <Text style={styles.label}></Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Montant à déposer"
+        keyboardType="numeric"
+        value={montant}
+        onChangeText={setMontant}
+      />
+      <Button title="Déposer" onPress={handleDepot} />
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    padding: 16,
   },
-  stepContainer: {
-    gap: 8,
+  label: {
+    fontSize: 16,
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  input: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 16,
   },
 });
