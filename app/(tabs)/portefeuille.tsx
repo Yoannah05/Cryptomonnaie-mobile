@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { db } from "@/config/firebase";
-import { collection, getDocs, getDoc, doc } from "firebase/firestore";
+import { ref, get, child } from "firebase/database"; // Import des fonctions Realtime Database
 import { View, Text, ActivityIndicator, FlatList } from "react-native";
 
 // Définition des types
@@ -24,55 +24,51 @@ const Portefeuille = () => {
     const fetchData = async () => {
       try {
         console.log("Début récupération du portefeuille...");
-        const portefeuilleSnapshot = await getDocs(collection(db, "portefeuille"));
 
-        if (portefeuilleSnapshot.empty) {
-          console.warn("Aucun document trouvé dans la collection 'portefeuille'.");
+        // Récupérer les données du portefeuille
+        const portefeuilleRef = ref(db, "portefeuille");
+        const portefeuilleSnapshot = await get(portefeuilleRef);
+
+        if (!portefeuilleSnapshot.exists()) {
+          console.warn("Aucune donnée trouvée dans 'portefeuille'.");
           setPortefeuille([]);
           setLoading(false);
           return;
         }
 
         const portefeuilleData: PortefeuilleData[] = [];
+        const portefeuilleObject = portefeuilleSnapshot.val();
 
-        for (let docSnap of portefeuilleSnapshot.docs) {
-          const portefeuille = docSnap.data();
-          console.log("Données récupérées d'un document portefeuille :", portefeuille);
-        
-          if (!portefeuille.id_cryptomonnaie) {
-            console.warn(`Référence manquante pour id_cryptomonnaie dans le portefeuille ID: ${docSnap.id}`);
+        // Parcourir les entrées du portefeuille
+        for (const [id, portefeuille] of Object.entries(portefeuilleObject)) {
+          const portefeuilleEntry = portefeuille as any;
+          console.log("Données récupérées d'une entrée portefeuille :", portefeuilleEntry);
+
+          if (!portefeuilleEntry.id_cryptomonnaie) {
+            console.warn(`Référence manquante pour id_cryptomonnaie dans le portefeuille ID: ${id}`);
             continue;
           }
-        
-          // Prendre seulement l'ID du document
-          const cryptoId = portefeuille.id_cryptomonnaie.id;
-          console.log(`ID extrait pour la cryptomonnaie: ${cryptoId}`);
-        
-          const cryptoDocRef = doc(db, "cryptomonnaie", cryptoId);
-          
-          try {
-            const cryptoSnap = await getDoc(cryptoDocRef);
-        
-            if (!cryptoSnap.exists()) {
-              console.warn(`Cryptomonnaie introuvable pour l'ID: ${cryptoId}`);
-              continue;
-            }
-        
-            const cryptoData = cryptoSnap.data() as CryptoData;
-            console.log("Données récupérées pour la cryptomonnaie :", cryptoData);
-        
-            portefeuilleData.push({
-              id: docSnap.id,
-              nom_cryptomonnaie: cryptoData?.nom || "Inconnu",
-              valeur_actuelle: cryptoData?.valeur_actuelle || 0,
-              valeur: portefeuille.valeur_actuelle || 0,
-            });
-          } catch (error) {
-            console.error(`Erreur lors de la récupération de la cryptomonnaie pour ${cryptoId} :`, error);
+
+          // Récupérer les données de la cryptomonnaie
+          const cryptoId = portefeuilleEntry.id_cryptomonnaie;
+          const cryptoRef = ref(db, `cryptomonnaie/${cryptoId}`);
+          const cryptoSapshot = await get(cryptoRef);
+
+          if (!cryptoSapshot.exists()) {
+            console.warn(`Cryptomonnaie introuvable pour l'ID: ${cryptoId}`);
+            continue;
           }
+
+          const cryptoData = cryptoSapshot.val() as CryptoData;
+          console.log("Données récupérées pour la cryptomonnaie :", cryptoData);
+
+          portefeuilleData.push({
+            id: id,
+            nom_cryptomonnaie: cryptoData?.nom || "Inconnu",
+            valeur_actuelle: cryptoData?.valeur_actuelle || 0,
+            valeur: portefeuilleEntry.valeur || 0,
+          });
         }
-        
-        
 
         setPortefeuille(portefeuilleData);
       } catch (error) {
@@ -97,7 +93,7 @@ const Portefeuille = () => {
   return (
     <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 40 }}>
       <Text style={{ fontSize: 30, fontWeight: "bold", marginBottom: 10 }}>💼 Mon Portefeuille</Text>
-  
+
       {portefeuille.length > 0 ? (
         <FlatList
           data={portefeuille}
@@ -115,8 +111,6 @@ const Portefeuille = () => {
       )}
     </View>
   );
-  
-  
 };
 
 export default Portefeuille;

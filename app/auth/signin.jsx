@@ -1,8 +1,7 @@
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
 import React, { useState, useContext } from 'react';
 import MyButton from '../../components/MyButton';
 import Input from '../../components/Input';
-import { ThemedView } from '@/components/ThemedView';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { useRouter } from 'expo-router';
@@ -26,11 +25,8 @@ export default function SignIn() {
     FirebaseService.login(email, password)
       .then(async (user) => {
         console.log('User signed in:', user);
-
-        // Fetch user details and update context/state
         const userData = await FirebaseService.getUserData(user.uid);
         setUserDetail(userData);
-
         setLoading(false);
         router.replace('/(tabs)/home');
       })
@@ -55,7 +51,14 @@ export default function SignIn() {
 
   return (
     <ParallaxScrollView
-          headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}>
+          headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
+          headerImage={
+            <Image
+              source={require('@/assets/images/image1.jpg')}
+              style={styles.reactLogo}
+            />
+            
+          }>
       <ThemedText type="title" style={styles.title}>Sign In</ThemedText>
 
       <ThemedText type="default" style={styles.label}>Email</ThemedText>
@@ -82,7 +85,7 @@ export default function SignIn() {
           disable={loading}
         />
       ) : (
-        <ActivityIndicator size="large" color="#fff" />
+        <ActivityIndicator size="large" color="blue" />
       )}
     </ParallaxScrollView>
   );
@@ -122,5 +125,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 2,
+  },
+  reactLogo: {
+    width: '100%',
+    height: 250,
   },
 });

@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react'; 
+import { useEffect, useState } from 'react';
 import { Text, View, StyleSheet, Image, FlatList, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FirebaseService from '@/app/services/firebaseService';
 import { ThemedView } from '@/components/ThemedView';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ToastAndroid, Platform, Alert } from 'react-native';
-
 
 export default function CryptoListScreen() {
   const [cryptos, setCryptos] = useState<{ id: string; nom_cryptomonnaie: string; valeur_actuelle: number }[]>([]);
@@ -15,12 +14,7 @@ export default function CryptoListScreen() {
     const fetchCryptos = async () => {
       try {
         const data = await FirebaseService.getCryptos();
-        const formattedData = data.map((crypto: any) => ({
-          id: crypto.id,
-          nom_cryptomonnaie: crypto.nom || 'Nom inconnu',
-          valeur_actuelle: crypto.valeur_actuelle || 0,
-        }));
-        setCryptos(formattedData);
+        setCryptos(data);
       } catch (error) {
         console.error('Erreur lors du chargement des cryptomonnaies', error);
       }
@@ -29,36 +23,52 @@ export default function CryptoListScreen() {
     fetchCryptos();
   }, []);
 
-  const toggleFavorite = (id: string, name: string) => {
-    setFavorites((prevFavorites) => {
-      const isAlreadyFavorite = prevFavorites.includes(id);
-      const newFavorites = isAlreadyFavorite
-        ? prevFavorites.filter((favId) => favId !== id)
-        : [...prevFavorites, id];
-  
-      const message = isAlreadyFavorite
-        ? `${name} retiré des favoris`
-        : `${name} ajouté aux favoris`;
-  
-      if (Platform.OS === 'android') {
-        ToastAndroid.show(message, ToastAndroid.SHORT);
+  const toggleFavorite = async (id: string, name: string) => {
+    try {
+      const user = FirebaseService.getCurrentUser();
+      if (!user) {
+        console.error('No user is signed in');
+        return;
+      }
+      const userId = user.uid;
+      const isAlreadyFavorite = favorites.includes(id);
+      
+      if (isAlreadyFavorite) {
+        console.log(`Retirer ${name} des favoris`);
+        await FirebaseService.removeFavoriteCrypto(userId, id);
       } else {
-        Alert.alert('Favoris', message);
+        console.log(`Ajouter ${name} aux favoris`);
+        await FirebaseService.addFavoriteCrypto(userId, id);
       }
   
-      return newFavorites;
-    });
-  };
+      setFavorites((prevFavorites) => {
+        const newFavorites = isAlreadyFavorite
+          ? prevFavorites.filter((favId) => favId !== id)
+          : [...prevFavorites, id];
   
+        const message = isAlreadyFavorite
+          ? `${name} retiré des favoris`
+          : `${name} ajouté aux favoris`;
   
+        if (Platform.OS === 'android') {
+          ToastAndroid.show(message, ToastAndroid.SHORT);
+        } else {
+          Alert.alert('Favoris', message);
+        }
+  
+        return newFavorites;
+      });
+    } catch (error) {
+      console.error("Erreur lors du changement de favori:", error);
+    }
+  };  
 
   return (
     <View style={{ flex: 1 }}>
       <ParallaxScrollView
-        headerImage={<Image source={require('@/assets/images/partial-react-logo.png')} style={{ width: '100%', height: 250 }} />}
+        headerImage={<Image source={require('@/assets/images/partial-react-logo.jpg')} style={{ width: '100%', height: 250 }} />}
         headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
       />
-      
       <ThemedView style={styles.container}>
         <Text style={styles.title}>Liste des Cryptomonnaies</Text>
         <FlatList
@@ -69,10 +79,9 @@ export default function CryptoListScreen() {
               <Text style={styles.cryptoName}>{item.nom_cryptomonnaie}</Text>
               <Text style={styles.cryptoValue}>{item.valeur_actuelle} USD</Text>
               <TouchableOpacity onPress={() => toggleFavorite(item.id, item.nom_cryptomonnaie)}>
-
-                <Ionicons 
+                <Ionicons
                   name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}
-                  size={24} 
+                  size={24}
                   color={favorites.includes(item.id) ? 'red' : 'gray'}
                 />
               </TouchableOpacity>
@@ -87,7 +96,7 @@ export default function CryptoListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 16,  
   },
   title: {
     fontSize: 20,

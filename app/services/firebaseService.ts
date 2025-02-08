@@ -19,23 +19,73 @@ const FirebaseService = {
     }
   },
 
-  getCryptos: async () => {
+  removeFavoriteCrypto: async (userId: string, cryptoId: string) => {
     try {
-      const cryptosRef = ref(db, "cryptomonnaie");  // Référence vers les cryptos dans Realtime Database
-      const snapshot = await get(cryptosRef);  // Utilisation de get() pour obtenir les données
-
-      if (snapshot.exists()) {
-        return snapshot.val();  // Retourne les données sous forme d'objet
-      } else {
-        console.log("No data available");
-        return [];
-      }
+      const userFavoritesRef = ref(db, `users/${userId}/favoris/${cryptoId}`);
+      await update(userFavoritesRef, {}); 
+      console.log(`Cryptomonnaie ${cryptoId} retirée des favoris de l'utilisateur ${userId}`);
     } catch (error) {
-      console.error("Erreur lors de la récupération des cryptos:", error);
+      console.error("Erreur lors de la suppression du favori :", error);
       throw error;
     }
   },
 
+  addFavoriteCrypto: async (userId: string, cryptoId: string) => {
+    try {
+      // Référence à la liste des favoris de l'utilisateur
+      const userFavoritesRef = ref(db, `users/${userId}/favoris`);
+
+      // On ajoute la cryptomonnaie aux favoris si elle n'y est pas déjà
+      await update(userFavoritesRef, {
+        [cryptoId]: true,
+      });
+
+      console.log(`Cryptomonnaie ${cryptoId} ajoutée aux favoris de l'utilisateur ${userId}`);
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de la cryptomonnaie aux favoris :", error);
+      throw error;
+    }
+  },
+
+  getCryptos: async () => {
+    try {
+      const cryptosRef = ref(db, 'cryptomonnaie');
+      const variationsRef = ref(db, 'variation');
+      const variationCryptosRef = ref(db, 'variation_cryptomonnaie');
+      
+      const [cryptosSnapshot, variationsSnapshot, variationCryptosSnapshot] = await Promise.all([
+        get(cryptosRef),
+        get(variationsRef),
+        get(variationCryptosRef)
+      ]);
+      
+      if (cryptosSnapshot.exists() && variationsSnapshot.exists() && variationCryptosSnapshot.exists()) {
+        const cryptosData = cryptosSnapshot.val();
+        const variationsData = variationsSnapshot.val();
+        const variationCryptosData = variationCryptosSnapshot.val();
+        
+        // Combining data
+        const formattedData = Object.keys(variationCryptosData).map((key) => {
+          const crypto = cryptosData[variationCryptosData[key].id_cryptomonnaie];
+          const value = variationsData[variationCryptosData[key].id_valeur].valeur;
+          
+          return {
+            id: variationCryptosData[key].id_cryptomonnaie,
+            nom_cryptomonnaie: crypto.nom || 'Nom inconnu',
+            valeur_actuelle: value || 0
+          };
+        });
+
+        return formattedData;
+      } else {
+        console.log('No data available');
+        return [];
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des cryptos:', error);
+      throw error;
+    }
+  },
   signUp: async (email: string, password: string, name: string) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
