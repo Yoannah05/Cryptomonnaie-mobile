@@ -3,10 +3,11 @@ import React, { useState, useContext } from 'react';
 import MyButton from '../../components/MyButton';
 import Input from '../../components/Input';
 import { ThemedView } from '@/components/ThemedView';
+import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { useRouter } from 'expo-router';
-import  FirebaseService  from '@/app/services/firebaseService';  // Adjust this import
-import { UserDetailContext } from '@/context/userDetailContext';  // Assuming UserDetailContext exists
+import FirebaseService from '@/app/services/firebaseService';
+import { UserDetailContext } from '@/context/userDetailContext';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -53,35 +54,37 @@ export default function SignIn() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ParallaxScrollView
+          headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}>
       <ThemedText type="title" style={styles.title}>Sign In</ThemedText>
-      <ThemedText type="default">Email</ThemedText>
+
+      <ThemedText type="default" style={styles.label}>Email</ThemedText>
       <Input
-        placeholder="Email"
+        placeholder="Enter your email"
         value={email}
         onChangeText={setEmail}
         style={styles.input}
       />
-      <ThemedText type="default">Password</ThemedText>
+
+      <ThemedText type="default" style={styles.label}>Password</ThemedText>
       <Input
-        placeholder="Password"
+        placeholder="Enter your password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
         style={styles.input}
       />
+
       {!loading ? (
         <MyButton
           title="Login"
           onPress={signIn}
           disable={loading}
-          style={styles.button}
-          textStyle={styles.buttonText}
         />
       ) : (
-        <ActivityIndicator size="large" color="#007bff" />
+        <ActivityIndicator size="large" color="#fff" />
       )}
-    </ThemedView>
+    </ParallaxScrollView>
   );
 }
 
@@ -90,29 +93,34 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    backgroundColor: '#f5f5f5',  // Light background color for a modern feel
+    paddingHorizontal: 20,
+    paddingBottom: 40, // Added bottom padding to keep the button from being too close to the edge
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#555',
   },
   input: {
     width: '100%',
-    marginBottom: 15,
-    color: 'white',
-  },
-  button: {
-    backgroundColor: '#007bff',
-    width: '100%',
-    padding: 15,
-    borderRadius: 5,
-    marginBottom: 15,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    textAlign: 'center',
+    height: 50,
+    paddingLeft: 16,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    marginBottom: 20,
+    fontSize: 16,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 2,
   },
 });

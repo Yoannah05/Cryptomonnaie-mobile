@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '@/config/firebase';
 import FirebaseService from '@/app/services/firebaseService';
-
+import MyButton from '@/components/MyButton';
 export default function Index() {
   const router = useRouter();
 
@@ -39,9 +39,10 @@ export default function Index() {
         <ThemedText>
           Join the revolution and start your journey with Bitcoin today. Create an account or log in to explore the world of cryptocurrencies.
         </ThemedText>
-        <Button
+        <MyButton
           title="Login"
           onPress={() => router.push('/auth/signin')} 
+          disable={false}
         />
       </ThemedView>
     </ParallaxScrollView>

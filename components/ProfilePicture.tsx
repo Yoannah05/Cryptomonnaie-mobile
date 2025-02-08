@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Alert, Image, ImageSourcePropType } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Alert, Image, Modal, Text } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadImage } from '@/app/services/cloudinaryService';
 import MyButton from './MyButton';
@@ -12,7 +12,8 @@ interface ProfilePictureProps {
 
 const ProfilePicture: React.FC<ProfilePictureProps> = ({ currentPhotoUrl, onPhotoUpdate, setIsUploading }) => {
   const defaultImage = require('@/assets/images/default-image.png');
-  const [image, setImage] = useState<ImageSourcePropType>(currentPhotoUrl ? { uri: currentPhotoUrl } : defaultImage);
+  const [image, setImage] = useState(currentPhotoUrl ? { uri: currentPhotoUrl } : defaultImage);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     setImage(currentPhotoUrl ? { uri: currentPhotoUrl } : defaultImage);
@@ -75,7 +76,7 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({ currentPhotoUrl, onPhot
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.imageContainer} onPress={pickImageFromGallery}>
+      <TouchableOpacity style={styles.imageContainer} onPress={() => setModalVisible(true)}>
         <Image
           source={image}
           style={styles.image}
@@ -95,6 +96,21 @@ const ProfilePicture: React.FC<ProfilePictureProps> = ({ currentPhotoUrl, onPhot
           disable={false}
         />
       </View>
+
+      {/* Modal to view image in full screen */}
+      <Modal
+        visible={modalVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity style={styles.modalBackground} onPress={() => setModalVisible(false)} />
+          <View style={styles.modalImageContainer}>
+            <Image source={image} style={styles.modalImage} />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -114,9 +130,9 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 8,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 12,
   },
   image: {
     width: '100%',
@@ -128,6 +144,29 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginTop: 15,
     width: '80%',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  modalBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  modalImageContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+  },
+  modalImage: {
+    width: 300,
+    height: 300,
+    borderRadius: 10,
   },
 });
 

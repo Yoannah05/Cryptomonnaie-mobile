@@ -18,12 +18,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#007bff',
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 30, // Rounded corners
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
     margin: 5,
-    elevation: 4, // Adding subtle shadow effect for depth
+    elevation: 4,
   },
   disabledButton: {
     backgroundColor: '#e0e0e0',

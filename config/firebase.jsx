@@ -1,11 +1,13 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, initializeAuth, GoogleAuthProvider, getReactNativePersistence } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getAuth, initializeAuth, GoogleAuthProvider } from "firebase/auth";
+import { getDatabase, ref, set, get, child, update } from "firebase/database";  // Importation des fonctions Realtime Database
+
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDaUIkNWzUjvaqIfB2jiUgFzAGbYy5eme4",
   authDomain: "crypto-2025.firebaseapp.com",
+  databaseURL: "https://crypto-2025-default-rtdb.europe-west1.firebasedatabase.app",  // Ajout de l'URL pour Realtime Database
   projectId: "crypto-2025",
   storageBucket: "crypto-2025.appspot.com",
   messagingSenderId: "1045796658129",
@@ -15,10 +17,10 @@ const firebaseConfig = {
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore
-const db = getFirestore(app);
+// Initialize Realtime Database
+const db = getDatabase(app);
 
-// Initialize Auth with persistence
+// Initialize Auth
 const auth = initializeAuth(app, {
   // persistence: getReactNativePersistence(ReactNativeAsyncStorage),
 });
