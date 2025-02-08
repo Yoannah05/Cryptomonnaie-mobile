@@ -1,5 +1,5 @@
 import { auth, db, googleProvider } from "@/config/firebase";
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { Notification } from './types';
@@ -14,6 +14,23 @@ const FirebaseService = {
     }
   },
 
+  getCryptos: async () => {
+    try {
+      const cryptosRef = collection(db, "cryptomonnaie");
+      const querySnapshot = await getDocs(cryptosRef);
+      
+      const cryptos = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+  
+      return cryptos;
+    } catch (error) {
+      console.error("Erreur lors de la récupération des cryptos:", error);
+      throw error;
+    }
+  },
+  
   signUp: async (email: string, password: string, name: string) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
