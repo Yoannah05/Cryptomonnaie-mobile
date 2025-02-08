@@ -96,13 +96,12 @@ const styles = StyleSheet.create({
   email: {
     fontSize: 16,
     color: '#333',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   name: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
-  },
-});
+    marginBottom: 20,
+  },});
 
 export default ProfileScreen;
