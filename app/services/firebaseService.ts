@@ -19,6 +19,17 @@ const FirebaseService = {
     }
   },
 
+  addExpoPushToken: async (userId: string, expoPushToken: string) => {
+    try {
+      const userRef = ref(db, `users/${userId}`); // Reference to the user's data
+      await update(userRef, { expoPushToken }); // Update the user's data with the Expo Push Token
+      console.log('Expo Push Token added/updated successfully for user:', userId);
+    } catch (error) {
+      console.error('Error adding/updating Expo Push Token:', error);
+      throw error;
+    }
+  },
+
   removeFavoriteCrypto: async (userId: string, cryptoId: string) => {
     try {
       const userFavoritesRef = ref(db, `users/${userId}/favoris/${cryptoId}`);

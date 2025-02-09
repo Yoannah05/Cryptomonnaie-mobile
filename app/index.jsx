@@ -22,7 +22,7 @@ Notifications.setNotificationHandler({
 });
 export default function Index() {
   const router = useRouter();
-  const { expoPushToken, notification, campaigns } = usePushNotifications();
+  const { expoPushToken } = usePushNotifications();
 
   onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -45,6 +45,8 @@ export default function Index() {
       monitorUserFavorites(userId, expoPushToken.data);
     }
   }, [expoPushToken]);
+
+
 
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {

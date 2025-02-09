@@ -110,7 +110,7 @@ const FavoriteCryptosScreen = () => {
             <View style={styles.cryptoItem}>
               <View style={styles.cryptoInfo}>
                 <Text style={styles.cryptoName}>{item.nom}</Text>
-                <Text style={styles.cryptoValue}>{item.valeur_actuelle} USD</Text>
+                <Text style={styles.cryptoValue}>{item.valeur_actuelle} MGA</Text>
               </View>
               
               {/* 🔹 Icône de suppression */}
