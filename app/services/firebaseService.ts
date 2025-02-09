@@ -1,8 +1,12 @@
 import { auth, db, googleProvider } from "@/config/firebase";
 import { collection, query, where, getDocs, orderBy, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
+<<<<<<< Updated upstream
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { Notification } from './types';
+=======
+import { ref, set, get, child, update, remove } from "firebase/database";  // Importation des fonctions de Realtime Database
+>>>>>>> Stashed changes
 
 
 const FirebaseService = {
@@ -15,6 +19,7 @@ const FirebaseService = {
     }
   },
 
+<<<<<<< Updated upstream
   
   getCryptos: async () => {
     try {
@@ -27,10 +32,63 @@ const FirebaseService = {
       }));
   
       return cryptos;
+=======
+  removeFavoriteCrypto: async (userId: string, cryptoId: string) => {
+    try {
+      const userFavoritesRef = ref(db, `users/${userId}/favoris/${cryptoId}`);
+      await remove(userFavoritesRef); 
+      console.log(`Cryptomonnaie ${cryptoId} retirée des favoris de l'utilisateur ${userId}`);
+    } catch (error) {
+      console.error("Erreur lors de la suppression du favori :", error);
+      throw error;
+    }
+  },
+
+  addFavoriteCrypto: async (userId: string, cryptoId: string) => {
+    try {
+      // Référence à la liste des favoris de l'utilisateur
+      const userFavoritesRef = ref(db, `users/${userId}/favoris`);
+
+      // On ajoute la cryptomonnaie aux favoris si elle n'y est pas déjà
+      await update(userFavoritesRef, {
+        [cryptoId]: true,
+      });
+
+      console.log(`Cryptomonnaie ${cryptoId} ajoutée aux favoris de l'utilisateur ${userId}`);
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de la cryptomonnaie aux favoris :", error);
+      throw error;
+    }
+  },
+
+  getCryptos: async () => {
+    try {
+      const cryptosRef = ref(db, "cryptomonnaie");
+      
+      // Récupérer les données de la base Realtime Database
+      const cryptosSnapshot = await get(cryptosRef);
+      
+      if (cryptosSnapshot.exists()) {
+        const cryptosData = cryptosSnapshot.val();
+        
+        // Formatter les données en un tableau
+        const formattedData = Object.keys(cryptosData).map((key) => ({
+          id: key,
+          nom_cryptomonnaie: cryptosData[key].nom || "Nom inconnu",
+          valeur_actuelle: cryptosData[key].valeur_actuelle || 0,
+        }));
+        
+        return formattedData;
+      } else {
+        console.log("Aucune donnée disponible");
+        return [];
+      }
+>>>>>>> Stashed changes
     } catch (error) {
       console.error("Erreur lors de la récupération des cryptos:", error);
       throw error;
     }
+
   },
   
 

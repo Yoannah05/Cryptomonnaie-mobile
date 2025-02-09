@@ -1,15 +1,22 @@
+<<<<<<< Updated upstream
 import { useEffect, useState } from 'react'; 
 import { Text, View, StyleSheet, Image, FlatList, TouchableOpacity } from 'react-native';
+=======
+import { useEffect, useState } from 'react';
+import { Text, View, StyleSheet, Image, FlatList, TouchableOpacity, ToastAndroid, Platform, Alert } from 'react-native';
+>>>>>>> Stashed changes
 import { Ionicons } from '@expo/vector-icons';
 import FirebaseService from '@/app/services/firebaseService';
 import { ThemedView } from '@/components/ThemedView';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ToastAndroid, Platform, Alert } from 'react-native';
+import { ref, onValue } from "firebase/database";
+import { db } from '@/config/firebase'; // Assurez-vous d'importer db
 
 
 export default function CryptoListScreen() {
   const [cryptos, setCryptos] = useState<{ id: string; nom_cryptomonnaie: string; valeur_actuelle: number }[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [favoriteCount, setFavoriteCount] = useState(0);
 
   useEffect(() => {
     const fetchCryptos = async () => {
@@ -29,6 +36,7 @@ export default function CryptoListScreen() {
     fetchCryptos();
   }, []);
 
+<<<<<<< Updated upstream
   const toggleFavorite = (id: string, name: string) => {
     setFavorites((prevFavorites) => {
       const isAlreadyFavorite = prevFavorites.includes(id);
@@ -51,6 +59,74 @@ export default function CryptoListScreen() {
   };
   
   
+=======
+  // 🔹 Écouter les favoris en temps réel
+  useEffect(() => {
+    const user = FirebaseService.getCurrentUser();
+    if (!user) return;
+
+    const userId = user.uid;
+    const favoritesRef = ref(db, `users/${userId}/favoris`);
+
+    const unsubscribe = onValue(favoritesRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setFavorites(Object.keys(snapshot.val()));
+      } else {
+        setFavorites([]);
+      }
+    });
+
+    return () => unsubscribe(); // Nettoyer le listener à la fin
+  }, []);
+
+  useEffect(() => {
+    const user = FirebaseService.getCurrentUser();
+    if (!user) return;
+  
+    const userId = user.uid;
+    const favoritesRef = ref(db, `users/${userId}/favoris`);
+  
+    const unsubscribe = onValue(favoritesRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setFavoriteCount(Object.keys(snapshot.val()).length);
+      } else {
+        setFavoriteCount(0);
+      }
+    });
+  
+    return () => unsubscribe();
+  }, []);
+
+  const toggleFavorite = async (id: string, name: string) => {
+    try {
+      const user = FirebaseService.getCurrentUser();
+      if (!user) {
+        console.error('No user is signed in');
+        return;
+      }
+      const userId = user.uid;
+      const isAlreadyFavorite = favorites.includes(id);
+      
+      if (isAlreadyFavorite) {
+        await FirebaseService.removeFavoriteCrypto(userId, id);
+      } else {
+        await FirebaseService.addFavoriteCrypto(userId, id);
+      }
+
+      const message = isAlreadyFavorite
+        ? `${name} retiré des favoris`
+        : `${name} ajouté aux favoris`;
+
+      if (Platform.OS === 'android') {
+        ToastAndroid.show(message, ToastAndroid.SHORT);
+      } else {
+        Alert.alert(message);
+      }
+    } catch (error) {
+      console.error("Erreur lors du changement de favori:", error);
+    }
+  };  
+>>>>>>> Stashed changes
 
   return (
     <View style={{ flex: 1 }}>
