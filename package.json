@@ -38,7 +38,11 @@
     "expo-haptics": "~14.0.1",
     "expo-linking": "~7.0.5",
     "expo-notifications": "^0.29.13",
+<<<<<<< Updated upstream
     "expo-router": "^3.1.0",
+=======
+    "expo-router": "^3.5.24",
+>>>>>>> Stashed changes
     "expo-splash-screen": "~0.29.21",
     "expo-status-bar": "~2.0.1",
     "expo-symbols": "~0.2.2",

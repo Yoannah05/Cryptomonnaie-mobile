@@ -1,15 +1,26 @@
 import React from 'react';
-import { FlatList, View, StyleSheet, Text } from 'react-native';
-import { ThemedView } from '@/components/ThemedView'; // Assuming ThemedView is used for the app's styling theme
-import { ThemedText } from '@/components/ThemedText'; // Assuming ThemedText is used to style text consistently
-import { usePushNotifications } from '@/app/services/notificationService'; // Import your custom hook
+import { FlatList, View, StyleSheet, TouchableOpacity } from 'react-native';
+import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
+import { usePushNotifications } from '@/app/services/notificationService';
+import { useRouter } from 'expo-router'; // Import useRouter for navigation
 
 const NotificationsScreen = () => {
   const { campaigns } = usePushNotifications(); // Fetch campaigns (notifications)
+  const router = useRouter(); // Initialize the router
 
+  // Handle notification press
+  const handleNotificationPress = (notificationId: string) => {
+    router.push(`/notifications/${notificationId}`);
+  };
+
+  // Render each notification item
   const renderItem = ({ item }: { item: any }) => {
     return (
-      <View style={styles.notificationContainer}>
+      <TouchableOpacity
+        onPress={() => handleNotificationPress(item.id)} // Handle press on notification
+        style={styles.notificationContainer}
+      >
         <View style={styles.notificationHeader}>
           <ThemedText type="subtitle">{item.title}</ThemedText>
           <ThemedText type="default" style={styles.dateText}>
@@ -17,7 +28,7 @@ const NotificationsScreen = () => {
           </ThemedText>
         </View>
         <ThemedText style={styles.notificationBody}>{item.message}</ThemedText>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -30,7 +41,7 @@ const NotificationsScreen = () => {
       <FlatList
         data={campaigns}
         renderItem={renderItem}
-        keyExtractor={(item) => item.dateCreated} // Unique key for each notification
+        keyExtractor={(item) => item.id} // Use a unique key for each notification
         contentContainerStyle={styles.notificationList}
       />
     </ThemedView>
@@ -40,10 +51,10 @@ const NotificationsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F7F7', 
+    backgroundColor: '#F7F7F7',
     paddingTop: 20,
     paddingHorizontal: 16,
-    marginTop:50
+    marginTop: 50,
   },
   header: {
     marginBottom: 16,
@@ -57,7 +68,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 16,
     padding: 16,
-    elevation: 3, // To create a shadow effect (Android)
+    elevation: 3, // Shadow effect (Android)
     shadowColor: '#000', // Shadow effect (iOS)
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,

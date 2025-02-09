@@ -140,6 +140,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
+<<<<<<< Updated upstream
+=======
+    paddingTop : 8,
+>>>>>>> Stashed changes
     fontSize: 24,
     fontWeight: "bold",
     color: "#2F4F4F",
@@ -192,7 +196,7 @@ const styles = StyleSheet.create({
   },
   noFavorites: {
     textAlign: "center",
-    fontSize: 18,
+    fontSize: 16,
     color: "#777",
     marginTop: 30,
   },

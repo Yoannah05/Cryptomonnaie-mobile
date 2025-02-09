@@ -47,20 +47,18 @@ export default function Index() {
   }, [expoPushToken]);
 
   useEffect(() => {
-    if (notification) {
-      console.log("Notification received:", notification);
-    }
-  }, [notification]);
-
-  useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-      console.log("Notification tapped:", response);
+      const notificationData = response.notification.request.content.data;
+      
+      if (notificationData && notificationData.notificationId) {
+        router.push(`/(tabs)/notifications/${notificationData.notificationId}`);
+      }
     });
 
     return () => {
       subscription.remove();
     };
-  }, []); 
+  }, []);
   
   return (
     <ParallaxScrollView

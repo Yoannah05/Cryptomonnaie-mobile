@@ -59,19 +59,17 @@ export default function SignIn() {
             />
             
           }>
-      <ThemedText type="title" style={styles.title}>Sign In</ThemedText>
+      <ThemedText type="title" style={styles.title}>Connectez-vous</ThemedText>
 
-      <ThemedText type="default" style={styles.label}>Email</ThemedText>
       <Input
-        placeholder="Enter your email"
+        placeholder="Votre email"
         value={email}
         onChangeText={setEmail}
         style={styles.input}
       />
 
-      <ThemedText type="default" style={styles.label}>Password</ThemedText>
       <Input
-        placeholder="Enter your password"
+        placeholder="Votre mot de passe"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -80,7 +78,7 @@ export default function SignIn() {
 
       {!loading ? (
         <MyButton
-          title="Login"
+          title="Se connecter"
           onPress={signIn}
           disable={loading}
         />
@@ -98,17 +96,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f5f5f5',  // Light background color for a modern feel
     paddingHorizontal: 20,
-    paddingBottom: 40, // Added bottom padding to keep the button from being too close to the edge
+    paddingBottom: 10, // Added bottom padding to keep the button from being too close to the edge
   },
   title: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingBottom: 10,
     gap: 8,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 10,  // Réduit la marge inférieure pour un espacement plus petit entre le titre et le champ
     color: '#555',
   },
   input: {
@@ -116,8 +115,8 @@ const styles = StyleSheet.create({
     height: 50,
     paddingLeft: 16,
     backgroundColor: '#fff',
-    borderRadius: 10,
-    marginBottom: 20,
+    borderRadius: 14,
+    marginBottom: 12,
     fontSize: 16,
     borderColor: '#ddd',
     borderWidth: 1,

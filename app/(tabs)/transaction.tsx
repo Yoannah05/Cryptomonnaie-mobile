@@ -126,6 +126,12 @@ const styles = StyleSheet.create({
   },
   activeButton: {
     backgroundColor: '#4CAF50',
+<<<<<<< Updated upstream
+=======
+  },
+  disabledButton: {
+    backgroundColor: '#DEDEDE', // Gris clair pour désactivation
+>>>>>>> Stashed changes
   },
   disabledButton: {
     backgroundColor: '#DEDEDE', // Gris clair pour désactivation

@@ -27,7 +27,11 @@ export default function CryptoListScreen() {
     fetchCryptos();
   }, []);
 
+<<<<<<< Updated upstream
   // 🔹 Écouter les favoris en temps réel
+=======
+  //Écouter les favoris en temps réel
+>>>>>>> Stashed changes
   useEffect(() => {
     const user = FirebaseService.getCurrentUser();
     if (!user) return;
@@ -49,10 +53,17 @@ export default function CryptoListScreen() {
   useEffect(() => {
     const user = FirebaseService.getCurrentUser();
     if (!user) return;
+<<<<<<< Updated upstream
 
     const userId = user.uid;
     const favoritesRef = ref(db, `users/${userId}/favoris`);
 
+=======
+  
+    const userId = user.uid;
+    const favoritesRef = ref(db, `users/${userId}/favoris`);
+  
+>>>>>>> Stashed changes
     const unsubscribe = onValue(favoritesRef, (snapshot) => {
       if (snapshot.exists()) {
         setFavoriteCount(Object.keys(snapshot.val()).length);
@@ -60,7 +71,11 @@ export default function CryptoListScreen() {
         setFavoriteCount(0);
       }
     });
+<<<<<<< Updated upstream
 
+=======
+  
+>>>>>>> Stashed changes
     return () => unsubscribe();
   }, []);
 
@@ -128,7 +143,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+<<<<<<< Updated upstream
 
+=======
+  
+>>>>>>> Stashed changes
   title: {
     fontSize: 20,
     fontWeight: 'bold',
