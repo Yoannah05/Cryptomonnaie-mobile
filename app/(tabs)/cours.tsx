@@ -138,7 +138,7 @@ export default function CoursScreen() {
             }}
             width={screenWidth - 40}
             height={250}
-            yAxisLabel="$"
+            yAxisLabel="Ar "
             chartConfig={{
               backgroundColor: "#fff",
               backgroundGradientFrom: "#f7f7f7",

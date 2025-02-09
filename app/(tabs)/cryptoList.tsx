@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, Image, FlatList, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, Image, FlatList, TouchableOpacity, ToastAndroid, Platform, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FirebaseService from '@/app/services/firebaseService';
 import { ThemedView } from '@/components/ThemedView';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ToastAndroid, Platform, Alert } from 'react-native';
+import { ref, onValue } from "firebase/database";
+import { db } from '@/config/firebase'; // Assurez-vous d'importer db
 
 export default function CryptoListScreen() {
   const [cryptos, setCryptos] = useState<{ id: string; nom_cryptomonnaie: string; valeur_actuelle: number }[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [favoriteCount, setFavoriteCount] = useState(0);
 
   useEffect(() => {
     const fetchCryptos = async () => {
@@ -23,6 +25,43 @@ export default function CryptoListScreen() {
     fetchCryptos();
   }, []);
 
+  //Écouter les favoris en temps réel
+  useEffect(() => {
+    const user = FirebaseService.getCurrentUser();
+    if (!user) return;
+
+    const userId = user.uid;
+    const favoritesRef = ref(db, `users/${userId}/favoris`);
+
+    const unsubscribe = onValue(favoritesRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setFavorites(Object.keys(snapshot.val()));
+      } else {
+        setFavorites([]);
+      }
+    });
+
+    return () => unsubscribe(); // Nettoyer le listener à la fin
+  }, []);
+
+  useEffect(() => {
+    const user = FirebaseService.getCurrentUser();
+    if (!user) return;
+  
+    const userId = user.uid;
+    const favoritesRef = ref(db, `users/${userId}/favoris`);
+  
+    const unsubscribe = onValue(favoritesRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setFavoriteCount(Object.keys(snapshot.val()).length);
+      } else {
+        setFavoriteCount(0);
+      }
+    });
+  
+    return () => unsubscribe();
+  }, []);
+
   const toggleFavorite = async (id: string, name: string) => {
     try {
       const user = FirebaseService.getCurrentUser();
@@ -34,30 +73,20 @@ export default function CryptoListScreen() {
       const isAlreadyFavorite = favorites.includes(id);
       
       if (isAlreadyFavorite) {
-        console.log(`Retirer ${name} des favoris`);
         await FirebaseService.removeFavoriteCrypto(userId, id);
       } else {
-        console.log(`Ajouter ${name} aux favoris`);
         await FirebaseService.addFavoriteCrypto(userId, id);
       }
-  
-      setFavorites((prevFavorites) => {
-        const newFavorites = isAlreadyFavorite
-          ? prevFavorites.filter((favId) => favId !== id)
-          : [...prevFavorites, id];
-  
-        const message = isAlreadyFavorite
-          ? `${name} retiré des favoris`
-          : `${name} ajouté aux favoris`;
-  
-        if (Platform.OS === 'android') {
-          ToastAndroid.show(message, ToastAndroid.SHORT);
-        } else {
-          Alert.alert('Favoris', message);
-        }
-  
-        return newFavorites;
-      });
+
+      const message = isAlreadyFavorite
+        ? `${name} retiré des favoris`
+        : `${name} ajouté aux favoris`;
+
+      if (Platform.OS === 'android') {
+        ToastAndroid.show(message, ToastAndroid.SHORT);
+      } else {
+        Alert.alert(message);
+      }
     } catch (error) {
       console.error("Erreur lors du changement de favori:", error);
     }
@@ -98,16 +127,18 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,  
   },
+  
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: 10,
+    marginTop: -50,
   },
   cryptoItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 12,
+    padding: 8,
     marginVertical: 8,
     backgroundColor: '#f0f0f0',
     borderRadius: 8,
