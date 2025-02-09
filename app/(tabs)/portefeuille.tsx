@@ -1,85 +1,80 @@
 import { useEffect, useState } from "react";
 import { db } from "@/config/firebase";
-import { ref, get, child } from "firebase/database"; // Import des fonctions Realtime Database
+import { ref, onValue, off } from "firebase/database"; 
 import { View, Text, ActivityIndicator, FlatList } from "react-native";
 
-// Définition des types
+// Types
 type PortefeuilleData = {
   id: string;
   valeur: number;
-  nom_cryptomonnaie: string;
-  valeur_actuelle: number;
+  id_cryptomonnaie: string;
+  nom_cryptomonnaie?: string;
+  id_trans_crypto?: string;
+  valeurTransaction?: number;
+  transactionStatus?: string;
 };
 
-type CryptoData = {
-  nom: string;
-  valeur_actuelle: number;
+type TransactionData = {
+  id_trans_crypto: string;
+  is_entree: boolean;
+  valeur: number;
 };
 
 const Portefeuille = () => {
   const [portefeuille, setPortefeuille] = useState<PortefeuilleData[]>([]);
+  const [transactions, setTransactions] = useState<Record<string, TransactionData>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        console.log("Début récupération du portefeuille...");
+    const portefeuilleRef = ref(db, "portefeuille");
+    const transactionRef = ref(db, "transaction_crypto");
 
-        // Récupérer les données du portefeuille
-        const portefeuilleRef = ref(db, "portefeuille");
-        const portefeuilleSnapshot = await get(portefeuilleRef);
-
-        if (!portefeuilleSnapshot.exists()) {
-          console.warn("Aucune donnée trouvée dans 'portefeuille'.");
-          setPortefeuille([]);
-          setLoading(false);
-          return;
-        }
-
-        const portefeuilleData: PortefeuilleData[] = [];
-        const portefeuilleObject = portefeuilleSnapshot.val();
-
-        // Parcourir les entrées du portefeuille
-        for (const [id, portefeuille] of Object.entries(portefeuilleObject)) {
-          const portefeuilleEntry = portefeuille as any;
-          console.log("Données récupérées d'une entrée portefeuille :", portefeuilleEntry);
-
-          if (!portefeuilleEntry.id_cryptomonnaie) {
-            console.warn(`Référence manquante pour id_cryptomonnaie dans le portefeuille ID: ${id}`);
-            continue;
-          }
-
-          // Récupérer les données de la cryptomonnaie
-          const cryptoId = portefeuilleEntry.id_cryptomonnaie;
-          const cryptoRef = ref(db, `cryptomonnaie/${cryptoId}`);
-          const cryptoSapshot = await get(cryptoRef);
-
-          if (!cryptoSapshot.exists()) {
-            console.warn(`Cryptomonnaie introuvable pour l'ID: ${cryptoId}`);
-            continue;
-          }
-
-          const cryptoData = cryptoSapshot.val() as CryptoData;
-          console.log("Données récupérées pour la cryptomonnaie :", cryptoData);
-
-          portefeuilleData.push({
-            id: id,
-            nom_cryptomonnaie: cryptoData?.nom || "Inconnu",
-            valeur_actuelle: cryptoData?.valeur_actuelle || 0,
-            valeur: portefeuilleEntry.valeur || 0,
-          });
-        }
-
-        setPortefeuille(portefeuilleData);
-      } catch (error) {
-        console.error("Erreur lors de la récupération du portefeuille :", error);
-      } finally {
-        setLoading(false);
+    // Récupérer les transactions
+    onValue(transactionRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const transactionsList = Object.entries(data)
+          .filter(([id, entry]) => entry !== null)
+          .reduce((acc, [id, entry]: [string, any]) => {
+            acc[id] = {
+              id_trans_crypto: id,
+              is_entree: entry.is_entree,
+              valeur: entry.valeur,
+            };
+            return acc;
+          }, {} as Record<string, TransactionData>);
+        setTransactions(transactionsList);
       }
-    };
+    });
 
-    fetchData();
-  }, []);
+    // Récupérer le portefeuille
+    onValue(portefeuilleRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const portefeuilleList: PortefeuilleData[] = Object.entries(data).map(([id, entry]: [string, any]) => {
+          const transaction = transactions[entry.id_transaction_crypto] || {};
+          return {
+            id,
+            id_cryptomonnaie: entry.id_cryptomonnaie || "Inconnu",
+            nom_cryptomonnaie: entry.nom || "Inconnu",
+            valeur: entry.valeur_actuelle || 0,
+            id_trans_crypto: entry.id_transaction_crypto || "N/A",
+            valeurTransaction: transaction.valeur || 0,
+            transactionStatus: transaction.is_entree ? "Validé" : "Non validé",
+          };
+        });
+        setPortefeuille(portefeuilleList);
+      } else {
+        setPortefeuille([]);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      off(portefeuilleRef);
+      off(transactionRef);
+    };
+  }, [transactions]);
 
   if (loading) {
     return (
@@ -98,11 +93,14 @@ const Portefeuille = () => {
         <FlatList
           data={portefeuille}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 20 }} // Ajout d'un padding en bas pour un bon espacement
+          contentContainerStyle={{ paddingBottom: 20 }}
           renderItem={({ item }) => (
             <View style={{ paddingVertical: 20, borderBottomWidth: 1, borderBottomColor: "#ddd" }}>
-              <Text style={{ fontWeight: "bold" }}>{item.nom_cryptomonnaie}</Text>
-              <Text>{item.valeur} unités ({item.valeur_actuelle} USD)</Text>
+              <Text style={{ fontWeight: "bold", fontSize: 18 }}>{item.nom_cryptomonnaie}</Text>
+              <Text>Valeur : {item.valeur} unités</Text>
+              <Text>Transaction numéro : {item.id_trans_crypto}</Text>
+              <Text>Valeur de la transaction : {item.valeurTransaction} unités</Text>
+              <Text>Statut : {item.transactionStatus}</Text>
             </View>
           )}
         />

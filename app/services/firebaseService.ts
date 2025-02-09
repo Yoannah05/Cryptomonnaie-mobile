@@ -1,6 +1,6 @@
 import { auth, db, googleProvider } from "@/config/firebase";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
-import { ref, set, get, child, update } from "firebase/database";  // Importation des fonctions de Realtime Database
+import { ref, set, get, child, update, remove } from "firebase/database";  // Importation des fonctions de Realtime Database
 
 interface Notification {
   userId: string;
@@ -22,7 +22,7 @@ const FirebaseService = {
   removeFavoriteCrypto: async (userId: string, cryptoId: string) => {
     try {
       const userFavoritesRef = ref(db, `users/${userId}/favoris/${cryptoId}`);
-      await update(userFavoritesRef, {}); 
+      await remove(userFavoritesRef); 
       console.log(`Cryptomonnaie ${cryptoId} retirée des favoris de l'utilisateur ${userId}`);
     } catch (error) {
       console.error("Erreur lors de la suppression du favori :", error);
@@ -49,42 +49,31 @@ const FirebaseService = {
 
   getCryptos: async () => {
     try {
-      const cryptosRef = ref(db, 'cryptomonnaie');
-      const variationsRef = ref(db, 'variation');
-      const variationCryptosRef = ref(db, 'variation_cryptomonnaie');
+      const cryptosRef = ref(db, "cryptomonnaie");
       
-      const [cryptosSnapshot, variationsSnapshot, variationCryptosSnapshot] = await Promise.all([
-        get(cryptosRef),
-        get(variationsRef),
-        get(variationCryptosRef)
-      ]);
+      // Récupérer les données de la base Realtime Database
+      const cryptosSnapshot = await get(cryptosRef);
       
-      if (cryptosSnapshot.exists() && variationsSnapshot.exists() && variationCryptosSnapshot.exists()) {
+      if (cryptosSnapshot.exists()) {
         const cryptosData = cryptosSnapshot.val();
-        const variationsData = variationsSnapshot.val();
-        const variationCryptosData = variationCryptosSnapshot.val();
         
-        // Combining data
-        const formattedData = Object.keys(variationCryptosData).map((key) => {
-          const crypto = cryptosData[variationCryptosData[key].id_cryptomonnaie];
-          const value = variationsData[variationCryptosData[key].id_valeur].valeur;
-          
-          return {
-            id: variationCryptosData[key].id_cryptomonnaie,
-            nom_cryptomonnaie: crypto.nom || 'Nom inconnu',
-            valeur_actuelle: value || 0
-          };
-        });
-
+        // Formatter les données en un tableau
+        const formattedData = Object.keys(cryptosData).map((key) => ({
+          id: key,
+          nom_cryptomonnaie: cryptosData[key].nom || "Nom inconnu",
+          valeur_actuelle: cryptosData[key].valeur_actuelle || 0,
+        }));
+        
         return formattedData;
       } else {
-        console.log('No data available');
+        console.log("Aucune donnée disponible");
         return [];
       }
     } catch (error) {
-      console.error('Erreur lors de la récupération des cryptos:', error);
+      console.error("Erreur lors de la récupération des cryptos:", error);
       throw error;
     }
+
   },
   signUp: async (email: string, password: string, name: string) => {
     try {

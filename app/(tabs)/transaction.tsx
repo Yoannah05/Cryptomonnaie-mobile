@@ -1,28 +1,63 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
+import { Image, StyleSheet } from 'react-native';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import MyButton from '@/components/MyButton';
 import Input from '../../components/Input';
 import { useState } from 'react';
+import { getAuth } from "firebase/auth";
 
 export default function TransactionScreen() {
-  const [transactionType, setTransactionType] = useState('deposit'); // 'deposit' ou 'withdraw'
+  const [transactionType, setTransactionType] = useState<'deposit' | 'withdraw'>('deposit');
   const [amount, setAmount] = useState('');
 
-  const handleTransaction = () => {
-    // Ajoute ici la logique pour effectuer le dépôt ou le retrait
+  const handleTransaction = async () => {
     if (!amount) {
-      alert('Veuillez entrer un montant');
+      alert("Veuillez entrer un montant");
       return;
     }
-    
-    if (transactionType === 'deposit') {
-      console.log(`Dépôt de ${amount} effectué`);
-    } else {
-      console.log(`Retrait de ${amount} effectué`);
+  
+    const auth = getAuth();
+    const user = auth.currentUser;
+  
+    if (!user) {
+      alert("Utilisateur non authentifié !");
+      return;
+    }
+  
+    try {
+      const accessToken = await user.getIdToken();
+  
+      const transactionData = {
+        id_utilisateur: user.uid,
+        is_entree: transactionType === "deposit",
+        is_valide: false,
+        valeur: parseFloat(amount),
+      };
+
+      console.log("Données envoyées :", transactionData);
+  
+      const response = await fetch(
+        `https://crypto-2025-default-rtdb.europe-west1.firebasedatabase.app/transaction_monnaie.json?auth=${accessToken}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(transactionData),
+        }
+      );
+  
+      const responseData = await response.json();
+      console.log("Réponse Firebase:", responseData);
+  
+      if (response.ok) {
+        alert(`Transaction de ${transactionType === "deposit" ? "dépôt" : "retrait"} effectuée`);
+        setAmount("");
+      } else {
+        alert("Erreur : " + JSON.stringify(responseData));
+      }
+    } catch (error) {
+      console.error("Erreur transaction :", error);
+      alert("Une erreur est survenue");
     }
   };
 
@@ -30,40 +65,32 @@ export default function TransactionScreen() {
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
       headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.jpg')}
-          style={styles.reactLogo}
-        />
+        <Image source={require('@/assets/images/partial-react-logo.jpg')} style={styles.reactLogo} />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Depot/Retrait</ThemedText>
-        <HelloWave />
+        <ThemedText type="title">Dépôt/Retrait</ThemedText>
       </ThemedView>
-
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Choisissez votre action</ThemedText>
-        <ThemedText>
-          Sélectionnez si vous voulez effectuer un dépôt ou un retrait.
-        </ThemedText>
       </ThemedView>
 
-      {/* Boutons de choix de type de transaction */}
+      {/* Boutons de choix */}
       <ThemedView style={styles.transactionButtons}>
         <MyButton
           title="Dépôt"
           onPress={() => setTransactionType('deposit')}
-          disable={false}
-          style={transactionType === 'deposit' ? styles.activeButton : {}}
+          disable={transactionType === 'deposit'}
+          style={transactionType === 'deposit' ? styles.activeButton : styles.disabledButton}
         />
         <MyButton
           title="Retrait"
-          disable={false}
           onPress={() => setTransactionType('withdraw')}
-          style={transactionType === 'withdraw' ? styles.activeButton : {}}
+          disable={transactionType === 'withdraw'}
+          style={transactionType === 'withdraw' ? styles.activeButton : styles.disabledButton}
         />
       </ThemedView>
 
-      {/* Champ de saisie du montant */}
+      {/* Champ de saisie */}
       <Input
         placeholder="Entrez le montant"
         value={amount}
@@ -72,12 +99,7 @@ export default function TransactionScreen() {
       />
 
       {/* Bouton Valider */}
-      <MyButton
-        title="Valider"
-        onPress={handleTransaction}
-        disable={!amount}
-        style={false}
-      />
+      <MyButton title="Valider" onPress={handleTransaction} disable={!amount} style={undefined} />
     </ParallaxScrollView>
   );
 }
@@ -93,11 +115,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+    width: '100%',
+    height: 250,
   },
   transactionButtons: {
     flexDirection: 'row',
@@ -106,6 +125,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   activeButton: {
-    backgroundColor: '#4CAF50', // Couleur pour le bouton actif
+    backgroundColor: '#4CAF50',
+  },
+  disabledButton: {
+    backgroundColor: '#DEDEDE', // Gris clair pour désactivation
   },
 });
