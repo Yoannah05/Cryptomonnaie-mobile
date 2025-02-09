@@ -106,7 +106,7 @@ export default function CryptoListScreen() {
           renderItem={({ item }) => (
             <View style={styles.cryptoItem}>
               <Text style={styles.cryptoName}>{item.nom_cryptomonnaie}</Text>
-              <Text style={styles.cryptoValue}>{item.valeur_actuelle} USD</Text>
+              <Text style={styles.cryptoValue}>{item.valeur_actuelle} MGA</Text>
               <TouchableOpacity onPress={() => toggleFavorite(item.id, item.nom_cryptomonnaie)}>
                 <Ionicons
                   name={favorites.includes(item.id) ? 'heart' : 'heart-outline'}

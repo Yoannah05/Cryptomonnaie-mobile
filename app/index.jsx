@@ -71,7 +71,7 @@ export default function Index() {
         
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome to Crypto World!</ThemedText>
+        <ThemedText type="title">Bienvenu dans le monde de la cryptomonnaie</ThemedText>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
