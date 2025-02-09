@@ -1,0 +1,19 @@
+[debug] [2025-02-07T18:48:20.267Z] ----------------------------------------------------------------------
+[debug] [2025-02-07T18:48:20.269Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Aiky Rarijason\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js login
+[debug] [2025-02-07T18:48:20.270Z] CLI Version:   13.30.0
+[debug] [2025-02-07T18:48:20.270Z] Platform:      win32
+[debug] [2025-02-07T18:48:20.270Z] Node Version:  v20.11.1
+[debug] [2025-02-07T18:48:20.270Z] Time:          Fri Feb 07 2025 21:48:20 GMT+0300 (heure normale d’Afrique de l’Est)
+[debug] [2025-02-07T18:48:20.270Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-02-07T18:48:20.273Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[info] i  Firebase optionally collects CLI and Emulator Suite usage and error reporting information to help improve our products. Data is collected in accordance with Google's privacy policy (https://policies.google.com/privacy) and is not used to identify you.
+ 
+[debug] [2025-02-07T18:48:20.982Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2025-02-07T18:48:20.982Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[info] i  To change your data collection preference at any time, run `firebase logout` and log in again. 
+[info] 
+[info] Visit this URL on this device to log in:
+[info] https://accounts.google.com/o/oauth2/auth?client_id=563584335869-fgrhgmd47bqnekij5i8b5pr03ho849e6.apps.googleusercontent.com&scope=email%20openid%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloudplatformprojects.readonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffirebase%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&response_type=code&state=105108697&redirect_uri=http%3A%2F%2Flocalhost%3A9005
+[info] 
+[info] Waiting for authentication...

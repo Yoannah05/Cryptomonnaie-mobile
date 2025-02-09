@@ -31,3 +31,10 @@ WEB API Crypto Frontoffice
         Toutes les fonctions à appeler avec une authentification seront dans un controller Authentified
         ☐ Récupérer l'id_utilisateur à partir du mail lié au token
         ☐ Créer un endpoint pour chaque fonction et appeler avec l'id_utilisateur et les données des formulaires
+
+    Yoannah :
+    -   ajouter favoris
+    -   trigger actions cryptomonnaie
+    -   envoie notification (depot/retrait achat/vente cryptos favoris variations cryptos)
+    -   recevoir notifications
+

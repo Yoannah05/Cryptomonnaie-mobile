@@ -20,7 +20,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.yoannah05.cryptomobile"
+      "package": "com.yoannah05.cryptomobile",
+      "googleServiceFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
