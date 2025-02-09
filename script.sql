@@ -31,24 +31,25 @@ CREATE TABLE Transaction_Monnaie(
    FOREIGN KEY(id_utilisateur) REFERENCES Utilisateur(id_utilisateur)
 );
 
-CREATE TABLE Transaction_Crypto(
-   id_transaction_crypto SERIAL,
-   valeur NUMERIC(15,5)  ,
-   is_entree BOOLEAN,
-   PRIMARY KEY(id_transaction_crypto)
-);
+      CREATE TABLE Transaction_Crypto(
+         id_transaction_crypto SERIAL,
+         id_cryptomonnaie INT REFERENCES Cryptomonnaie(id_cryptomonnaie)
+         valeur NUMERIC(15,5)  ,
+         is_entree BOOLEAN,
+         PRIMARY KEY(id_transaction_crypto)
+      );
 
-CREATE TABLE Historique_Individu(
-   id_historique SERIAL,
-   date_historique TIMESTAMP,
-   id_transaction_crypto_init INTEGER,
-   id_transaction_monnaie INTEGER,
-   id_transaction_crypto_result INTEGER,
-   PRIMARY KEY(id_historique),
-   FOREIGN KEY(id_transaction_crypto_init) REFERENCES Transaction_Crypto(id_transaction_crypto),
-   FOREIGN KEY(id_transaction_monnaie) REFERENCES Transaction_Monnaie(id_transaction_monnaie),
-   FOREIGN KEY(id_transaction_crypto_result) REFERENCES Transaction_Crypto(id_transaction_crypto)
-);
+      CREATE TABLE Historique_Individu(
+         id_historique SERIAL,
+         date_historique TIMESTAMP,
+         id_transaction_crypto_init INTEGER,
+         id_transaction_monnaie INTEGER,
+         id_transaction_crypto_result INTEGER,
+         PRIMARY KEY(id_historique),
+         FOREIGN KEY(id_transaction_crypto_init) REFERENCES Transaction_Crypto(id_transaction_crypto),
+         FOREIGN KEY(id_transaction_monnaie) REFERENCES Transaction_Monnaie(id_transaction_monnaie),
+         FOREIGN KEY(id_transaction_crypto_result) REFERENCES Transaction_Crypto(id_transaction_crypto)
+      );
 
 CREATE TABLE Portefeuille(
    id_porte_feuille SERIAL,

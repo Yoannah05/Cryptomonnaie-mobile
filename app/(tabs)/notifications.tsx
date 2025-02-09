@@ -1,33 +1,49 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, View, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
-import { usePushNotifications } from '@/app/services/notificationService';
 import { useRouter } from 'expo-router'; // Import useRouter for navigation
+import * as Notifications from 'expo-notifications'; // Import Expo Notifications
 
 const NotificationsScreen = () => {
-  const { campaigns } = usePushNotifications(); // Fetch campaigns (notifications)
+  const [notifications, setNotifications] = useState<any[]>([]); // Local state for notifications
   const router = useRouter(); // Initialize the router
 
-  // Handle notification press
+  // Handle notification press (navigates to notification details page)
   const handleNotificationPress = (notificationId: string) => {
-    router.push(`/notifications/${notificationId}`);
+    router.push(`../../components/${notificationId}`);
   };
+
+  // Listen for incoming notifications
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener((notification) => {
+      // Add the new notification to the local state
+      setNotifications((prev) => [
+        ...prev,
+        {
+          id: notification.request.identifier,
+          message: notification.request.content.body,
+          timestamp: new Date(notification.date).getTime(),        
+        },
+      ]);
+    });
+
+    return () => subscription.remove(); // Cleanup listener
+  }, []);
 
   // Render each notification item
   const renderItem = ({ item }: { item: any }) => {
     return (
       <TouchableOpacity
-        onPress={() => handleNotificationPress(item.id)} // Handle press on notification
+        onPress={() => handleNotificationPress(item.timestamp?.toString() || 'unknown')} // Fallback for missing timestamp
         style={styles.notificationContainer}
       >
         <View style={styles.notificationHeader}>
-          <ThemedText type="subtitle">{item.title}</ThemedText>
+          <ThemedText type="subtitle">{item.message || 'No message'}</ThemedText>
           <ThemedText type="default" style={styles.dateText}>
-            {new Date(item.dateCreated).toLocaleString()} {/* Format the date */}
+            {item.timestamp ? new Date(item.timestamp).toLocaleString() : 'Unknown date'}
           </ThemedText>
         </View>
-        <ThemedText style={styles.notificationBody}>{item.message}</ThemedText>
       </TouchableOpacity>
     );
   };
@@ -38,11 +54,15 @@ const NotificationsScreen = () => {
         <ThemedText type="title">Notifications</ThemedText>
       </View>
 
+      {/* Render the notifications list */}
       <FlatList
-        data={campaigns}
+        data={notifications}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id} // Use a unique key for each notification
+        keyExtractor={(item) => item.timestamp?.toString() || 'unknown'} // Fallback for missing timestamp
         contentContainerStyle={styles.notificationList}
+        ListEmptyComponent={
+          <ThemedText style={styles.emptyText}>No notifications found.</ThemedText>
+        }
       />
     </ThemedView>
   );
@@ -83,9 +103,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#888',
   },
-  notificationBody: {
-    fontSize: 14,
-    color: '#333',
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#888',
   },
 });
 
