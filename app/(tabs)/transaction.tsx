@@ -70,7 +70,6 @@ export default function TransactionScreen() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Dépôt/Retrait</ThemedText>
       </ThemedView>
-
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Choisissez votre action</ThemedText>
       </ThemedView>

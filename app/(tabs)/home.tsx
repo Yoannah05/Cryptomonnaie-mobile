@@ -50,7 +50,7 @@ export default function HomeScreen() {
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
       headerImage={
         <Image
-          source={require('@/assets/images/partial-react-logo.jpg')} // Conserver l'image telle quelle
+          source={require('@/assets/images/partial-react-logo.jpg')} 
           style={styles.reactLogo}
         />
       }>
@@ -58,7 +58,6 @@ export default function HomeScreen() {
         <ThemedText type="title">Cryptomonnaie</ThemedText>
         <HelloWave />
       </ThemedView>
-
       {/* Section de bienvenue */}
       <ThemedView style={styles.welcomeContainer}>
         <ThemedText type="subtitle">Bienvenue dans notre application de Cryptomonnaie</ThemedText>
@@ -147,5 +146,10 @@ const styles = StyleSheet.create({
   customButton: {
     flex: 1, // Permet aux boutons de prendre un espace égal
     marginHorizontal: 5, // Espacement horizontal entre les boutons
+    height: 178,
+    width: 290,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
   },
 });

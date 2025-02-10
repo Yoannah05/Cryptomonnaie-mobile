@@ -142,6 +142,55 @@ const Portefeuille = () => {
       console.log("Aucun utilisateur connecté.");
     }
   }, [transactions, cryptomonnaies]);
+    const portefeuilleRef = ref(db, "portefeuille");
+    const transactionRef = ref(db, "transaction_crypto");
+
+    // Récupérer les transactions
+    onValue(transactionRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const transactionsList = Object.entries(data)
+          .filter(([id, entry]) => entry !== null)
+          .reduce((acc, [id, entry]: [string, any]) => {
+            acc[id] = {
+              id_trans_crypto: id,
+              is_entree: entry.is_entree,
+              valeur: entry.valeur,
+            };
+            return acc;
+          }, {} as Record<string, TransactionData>);
+        setTransactions(transactionsList);
+      }
+    });
+
+    // Récupérer le portefeuille
+    onValue(portefeuilleRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const portefeuilleList: PortefeuilleData[] = Object.entries(data).map(([id, entry]: [string, any]) => {
+          const transaction = transactions[entry.id_transaction_crypto] || {};
+          return {
+            id,
+            id_cryptomonnaie: entry.id_cryptomonnaie || "Inconnu",
+            nom_cryptomonnaie: entry.nom || "Inconnu",
+            valeur: entry.valeur_actuelle || 0,
+            id_trans_crypto: entry.id_transaction_crypto || "N/A",
+            valeurTransaction: transaction.valeur || 0,
+            transactionStatus: transaction.is_entree ? "Validé" : "Non validé",
+          };
+        });
+        setPortefeuille(portefeuilleList);
+      } else {
+        setPortefeuille([]);
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      off(portefeuilleRef);
+      off(transactionRef);
+    };
+  }, [transactions]);
 
   if (loading) {
     return (

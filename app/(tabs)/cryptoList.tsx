@@ -1,3 +1,5 @@
+import { ThemedText } from '@/components/ThemedText';
+import { HelloWave } from '@/components/HelloWave';
 import { useEffect, useState } from 'react';
 import { Text, View, StyleSheet, Image, FlatList, TouchableOpacity, ToastAndroid, Platform, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +8,7 @@ import { ThemedView } from '@/components/ThemedView';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ref, onValue } from "firebase/database";
 import { db } from '@/config/firebase';
+
 
 export default function CryptoListScreen() {
   const [cryptos, setCryptos] = useState<{ id: string; nom_cryptomonnaie: string; valeur_actuelle: number }[]>([]);
@@ -24,7 +27,6 @@ export default function CryptoListScreen() {
 
     fetchCryptos();
   }, []);
-
   useEffect(() => {
     const user = FirebaseService.getCurrentUser();
     if (!user) return;
@@ -41,6 +43,7 @@ export default function CryptoListScreen() {
     });
 
     return () => unsubscribe();
+
   }, []);
 
   useEffect(() => {
@@ -57,7 +60,6 @@ export default function CryptoListScreen() {
         setFavoriteCount(0);
       }
     });
-  
     return () => unsubscribe();
   }, []);
 
@@ -70,7 +72,7 @@ export default function CryptoListScreen() {
       }
       const userId = user.uid;
       const isAlreadyFavorite = favorites.includes(id);
-      
+
       if (isAlreadyFavorite) {
         await FirebaseService.removeFavoriteCrypto(userId, id);
       } else {
@@ -89,7 +91,7 @@ export default function CryptoListScreen() {
     } catch (error) {
       console.error("Erreur lors du changement de favori:", error);
     }
-  };  
+  };
 
   return (
     <View style={styles.container}>
@@ -118,12 +120,28 @@ export default function CryptoListScreen() {
             </View>
           )}
         />
+      }>
+      <ThemedView style={styles.titleContainer}>
+        <ThemedText type="title">Welcome!</ThemedText>
+        <HelloWave />
       </ThemedView>
-    </View>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">This is the profile screen</ThemedText>
+        <ThemedText>
+          this is a test <ThemedText type="defaultSemiBold">yazzz</ThemedText> right?
+          Press{' '}
+        </ThemedText>
+      </ThemedView>
+    </ParallaxScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   container: {
     flex: 1,
     backgroundColor: '#FAFAFA',
@@ -138,6 +156,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -176,5 +195,15 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 50,
     backgroundColor: '#F0F0F0',
+  stepContainer: {
+    gap: 8,
+    marginBottom: 8,
+  },
+  reactLogo: {
+    height: 178,
+    width: 290,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
   },
 });
