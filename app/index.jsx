@@ -22,7 +22,7 @@ Notifications.setNotificationHandler({
 });
 export default function Index() {
   const router = useRouter();
-  const { expoPushToken, notification, campaigns } = usePushNotifications();
+  const { expoPushToken } = usePushNotifications();
 
   onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -46,21 +46,21 @@ export default function Index() {
     }
   }, [expoPushToken]);
 
-  useEffect(() => {
-    if (notification) {
-      console.log("Notification received:", notification);
-    }
-  }, [notification]);
+
 
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-      console.log("Notification tapped:", response);
+      const notificationData = response.notification.request.content.data;
+      
+      if (notificationData && notificationData.notificationId) {
+        router.push(`/(tabs)/notifications/${notificationData.notificationId}`);
+      }
     });
 
     return () => {
       subscription.remove();
     };
-  }, []); 
+  }, []);
   
   return (
     <ParallaxScrollView
@@ -73,7 +73,7 @@ export default function Index() {
         
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome to Crypto World!</ThemedText>
+        <ThemedText type="title">Bienvenu dans le monde de la cryptomonnaie</ThemedText>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
