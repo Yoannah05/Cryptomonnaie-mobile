@@ -1,23 +1,50 @@
-import React from 'react';
-import { FlatList, View, StyleSheet, Text } from 'react-native';
-import { ThemedView } from '@/components/ThemedView'; // Assuming ThemedView is used for the app's styling theme
-import { ThemedText } from '@/components/ThemedText'; // Assuming ThemedText is used to style text consistently
-import { usePushNotifications } from '@/app/services/notificationService'; // Import your custom hook
+import React, { useEffect, useState } from 'react';
+import { FlatList, View, StyleSheet, TouchableOpacity } from 'react-native';
+import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
+import { useRouter } from 'expo-router'; // Import useRouter for navigation
+import * as Notifications from 'expo-notifications'; // Import Expo Notifications
 
 const NotificationsScreen = () => {
-  const { campaigns } = usePushNotifications(); // Fetch campaigns (notifications)
+  const [notifications, setNotifications] = useState<any[]>([]); // Local state for notifications
+  const router = useRouter(); // Initialize the router
 
+  // Handle notification press (navigates to notification details page)
+  const handleNotificationPress = (notificationId: string) => {
+    router.push(`../../components/${notificationId}`);
+  };
+
+  // Listen for incoming notifications
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener((notification) => {
+      // Add the new notification to the local state
+      setNotifications((prev) => [
+        ...prev,
+        {
+          id: notification.request.identifier,
+          message: notification.request.content.body,
+          timestamp: new Date(notification.date).getTime(),        
+        },
+      ]);
+    });
+
+    return () => subscription.remove(); // Cleanup listener
+  }, []);
+
+  // Render each notification item
   const renderItem = ({ item }: { item: any }) => {
     return (
-      <View style={styles.notificationContainer}>
+      <TouchableOpacity
+        onPress={() => handleNotificationPress(item.timestamp?.toString() || 'unknown')} // Fallback for missing timestamp
+        style={styles.notificationContainer}
+      >
         <View style={styles.notificationHeader}>
-          <ThemedText type="subtitle">{item.title}</ThemedText>
+          <ThemedText type="subtitle">{item.message || 'No message'}</ThemedText>
           <ThemedText type="default" style={styles.dateText}>
-            {new Date(item.dateCreated).toLocaleString()} {/* Format the date */}
+            {item.timestamp ? new Date(item.timestamp).toLocaleString() : 'Unknown date'}
           </ThemedText>
         </View>
-        <ThemedText style={styles.notificationBody}>{item.message}</ThemedText>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -27,11 +54,15 @@ const NotificationsScreen = () => {
         <ThemedText type="title">Notifications</ThemedText>
       </View>
 
+      {/* Render the notifications list */}
       <FlatList
-        data={campaigns}
+        data={notifications}
         renderItem={renderItem}
-        keyExtractor={(item) => item.dateCreated} // Unique key for each notification
+        keyExtractor={(item) => item.timestamp?.toString() || 'unknown'} // Fallback for missing timestamp
         contentContainerStyle={styles.notificationList}
+        ListEmptyComponent={
+          <ThemedText style={styles.emptyText}>No notifications found.</ThemedText>
+        }
       />
     </ThemedView>
   );
@@ -40,10 +71,10 @@ const NotificationsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F7F7', 
+    backgroundColor: '#F7F7F7',
     paddingTop: 20,
     paddingHorizontal: 16,
-    marginTop:50
+    marginTop: 50,
   },
   header: {
     marginBottom: 16,
@@ -57,7 +88,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 16,
     padding: 16,
-    elevation: 3, // To create a shadow effect (Android)
+    elevation: 3, // Shadow effect (Android)
     shadowColor: '#000', // Shadow effect (iOS)
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -72,9 +103,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#888',
   },
-  notificationBody: {
-    fontSize: 14,
-    color: '#333',
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#888',
   },
 });
 

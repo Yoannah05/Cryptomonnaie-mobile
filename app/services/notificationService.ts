@@ -5,27 +5,29 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { getDatabase, ref, get, set } from "firebase/database";
 import { app } from '@/config/firebase'; // Import your Firebase config
+import { onAuthStateChanged } from "firebase/auth"; // Import Firebase Authentication
+import { auth } from '@/config/firebase'; // Import your Firebase auth instance
 
 export interface PushNotificationState {
     expoPushToken?: Notifications.ExpoPushToken;
     notification?: Notifications.Notification;
-    campaigns: any[]; // Add campaigns to the state
+    notifications: any[]; // Store notifications here
 }
 
-const createCampaign = async (title: string, message: string) => {
+const createNotification = async (userId: string, message: string) => {
     const db = getDatabase(app);
-    const campaignId = `campaign_${new Date().getTime()}`;
-    await set(ref(db, "campaigns/" + campaignId), {
-        title,
+    const notificationId = `notification_${new Date().getTime()}`;
+    await set(ref(db, `users/${userId}/notifications/${notificationId}`), {
         message,
-        dateCreated: new Date().toISOString(),
+        timestamp: new Date().getTime(),
     });
 };
 
 export const usePushNotifications = (): PushNotificationState => {
     const [expoPushToken, setExpoPushToken] = useState<Notifications.ExpoPushToken | undefined>();
     const [notification, setNotification] = useState<Notifications.Notification | undefined>();
-    const [campaigns, setCampaigns] = useState<any[]>([]); // Store the campaigns
+    const [notifications, setNotifications] = useState<any[]>([]); // Store notifications
+    const [userId, setUserId] = useState<string | null>(null); // Store the user ID
 
     const notificationListener = useRef<Notifications.Subscription>();
     const responseListener = useRef<Notifications.Subscription>();
@@ -57,13 +59,13 @@ export const usePushNotifications = (): PushNotificationState => {
         }
     };
 
-    // Fetch campaigns from Firebase
-    const fetchCampaigns = async () => {
+    // Fetch notifications from Firebase for the current user
+    const fetchNotifications = async (userId: string) => {
         const db = getDatabase(app);
-        const campaignsRef = ref(db, "campaigns"); // Assuming you're storing campaigns in 'campaigns' node
-        const snapshot = await get(campaignsRef);
+        const notificationsRef = ref(db, `users/${userId}/notifications`); // Fetch notifications for the user
+        const snapshot = await get(notificationsRef);
         if (snapshot.exists()) {
-            setCampaigns(Object.values(snapshot.val()));
+            setNotifications(Object.values(snapshot.val())); // Set notifications in state
         }
     };
 
@@ -95,24 +97,34 @@ export const usePushNotifications = (): PushNotificationState => {
     };
 
     useEffect(() => {
-        registerForPushNotificationsAsync().then((token) => {
-            setExpoPushToken(token);
+        // Listen for authentication state changes
+        const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log(user);
+                setUserId(user.uid); // Store user ID when user is authenticated
+
+                // Fetch notifications for the authenticated user
+                fetchNotifications(user.uid);
+
+                // Request push notification permissions and register for token
+                const token = await registerForPushNotificationsAsync();
+                setExpoPushToken(token);
+            } else {
+                setUserId(null); // Clear userId when no user is authenticated
+            }
         });
 
         // Listen for incoming notifications
         notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
             console.log("Notification received:", notification);
             setNotification(notification);
-            setCampaigns((prev) => [notification, ...prev]); // Add the new notification to the campaigns list
+            setNotifications((prev) => [notification, ...prev]); // Add the new notification to the notifications list
         });
 
         // Listen for user interaction with notifications
         responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
             console.log("Notification tapped:", response);
         });
-
-        // Fetch campaigns from Firebase
-        fetchCampaigns();
 
         return () => {
             // Clean up listeners
@@ -122,15 +134,17 @@ export const usePushNotifications = (): PushNotificationState => {
             if (responseListener.current) {
                 Notifications.removeNotificationSubscription(responseListener.current);
             }
+            // Clean up auth state listener
+            unsubscribeAuth();
         };
-    }, []);
+    }, []); // Empty dependency array to run this effect only once on mount
 
     return {
         expoPushToken,
         notification,
-        campaigns, // Return campaigns
+        notifications, // Return notifications
     };
 };
 
-// Export the createCampaign function for external use
-export { createCampaign };
+// Export the createNotification function for external use
+export { createNotification };

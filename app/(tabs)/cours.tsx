@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, View, Text, Dimensions, ActivityIndicator } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { db } from '@/config/firebase';
-import { ref, get, child } from 'firebase/database'; // Import des fonctions Realtime Database
+import { ref, onValue, get } from 'firebase/database'; // Utilisation de onValue pour les mises à jour en temps réel
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -25,80 +25,85 @@ export default function CoursScreen() {
   const [cryptoColors, setCryptoColors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
-    const fetchVariations = async () => {
-      try {
-        console.log("Récupération des variations...");
-        const variationsRef = ref(db, "variation_cryptomonnaie");
-        const variationsSnapshot = await get(variationsRef);
+    const fetchVariations = () => {
+      const variationsRef = ref(db, 'variation_cryptomonnaie');
+      
+      // Écoute les changements dans les données de variation
+      const unsubscribe = onValue(variationsRef, async (snapshot) => {
+        console.log("Récupération des données...");
 
-        if (!variationsSnapshot.exists()) {
-          console.warn("Aucune donnée trouvée dans 'variation_cryptomonnaie'.");
-          setVariations([]);
-          setLoading(false);
-          return;
-        }
-
-        const variationsData: VariationData[] = [];
-        const cryptoSet = new Set<string>();
-        const variationsObject = variationsSnapshot.val();
-
-        // Parcourir les entrées des variations
-        for (const [id, variation] of Object.entries(variationsObject)) {
-          const variationEntry = variation as any;
-          console.log("Données récupérées d'une variation :", variationEntry);
-
-          if (!variationEntry.id_cryptomonnaie || !variationEntry.id_valeur) {
-            console.warn(`Référence manquante dans la variation ID: ${id}`);
-            continue;
+        try {
+          if (!snapshot.exists()) {
+            console.warn("Aucune donnée trouvée dans 'variation_cryptomonnaie'.");
+            setVariations([]);
+            setLoading(false);
+            return;
           }
 
-          // Récupération du nom de la cryptomonnaie
-          const cryptoId = variationEntry.id_cryptomonnaie;
-          const cryptoRef = ref(db, `cryptomonnaie/${cryptoId}`);
-          const cryptoSapshot = await get(cryptoRef);
+          const variationsData: VariationData[] = [];
+          const cryptoSet = new Set<string>();
+          const variationsObject = snapshot.val();
 
-          if (!cryptoSapshot.exists()) {
-            console.warn(`Cryptomonnaie introuvable pour l'ID: ${cryptoId}`);
-            continue;
+          // Parcourir les variations
+          for (const [id, variation] of Object.entries(variationsObject)) {
+            const variationEntry = variation as any;
+
+            if (!variationEntry.id_cryptomonnaie || !variationEntry.id_valeur) {
+              console.warn(`Référence manquante dans la variation ID: ${id}`);
+              continue;
+            }
+
+            // Récupérer le nom de la cryptomonnaie
+            const cryptoId = variationEntry.id_cryptomonnaie;
+            const cryptoRef = ref(db, `cryptomonnaie/${cryptoId}`);
+            const cryptoSnapshot = await get(cryptoRef);
+
+            if (!cryptoSnapshot.exists()) {
+              console.warn(`Cryptomonnaie introuvable pour l'ID: ${cryptoId}`);
+              continue;
+            }
+
+            const cryptoData = cryptoSnapshot.val();
+            const cryptoName = cryptoData.nom || "Inconnu";
+            cryptoSet.add(cryptoName);
+
+            // Récupérer la valeur de la variation
+            const valeurId = variationEntry.id_valeur;
+            const valeurRef = ref(db, `variation/${valeurId}`);
+            const valeurSnapshot = await get(valeurRef);
+
+            if (!valeurSnapshot.exists()) {
+              console.warn(`Valeur de variation introuvable pour l'ID: ${valeurId}`);
+              continue;
+            }
+
+            const valeurData = valeurSnapshot.val();
+
+            variationsData.push({
+              id: id,
+              nom_cryptomonnaie: cryptoName,
+              valeur: valeurData.valeur || 0,
+              date_variation: new Date(valeurData.date_variation).toLocaleDateString(),
+            });
           }
 
-          const cryptoData = cryptoSapshot.val();
-          const cryptoName = cryptoData.nom || "Inconnu";
-          cryptoSet.add(cryptoName);
-
-          // Récupération de la valeur de la variation
-          const valeurId = variationEntry.id_valeur;
-          const valeurRef = ref(db, `variation/${valeurId}`);
-          const valeurSnapshot = await get(valeurRef);
-
-          if (!valeurSnapshot.exists()) {
-            console.warn(`Valeur de variation introuvable pour l'ID: ${valeurId}`);
-            continue;
-          }
-
-          const valeurData = valeurSnapshot.val();
-
-          variationsData.push({
-            id: id,
-            nom_cryptomonnaie: cryptoName,
-            valeur: valeurData.valeur || 0,
-            date_variation: new Date(valeurData.date_variation).toLocaleDateString(),
+          // Générer une couleur pour chaque cryptomonnaie
+          const cryptoColorMap: { [key: string]: string } = {};
+          Array.from(cryptoSet).forEach((crypto, index) => {
+            cryptoColorMap[crypto] = generateColor(index);
           });
+
+          setCryptoColors(cryptoColorMap);
+          setVariations(variationsData);
+        } catch (error) {
+          console.error("Erreur lors de la récupération des variations :", error);
+        } finally {
+          setLoading(false);
         }
+      });
 
-        // Générer une couleur pour chaque cryptomonnaie
-        const cryptoColorMap: { [key: string]: string } = {};
-        Array.from(cryptoSet).forEach((crypto, index) => {
-          cryptoColorMap[crypto] = generateColor(index);
-        });
-
-        setCryptoColors(cryptoColorMap);
-        setVariations(variationsData);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des variations :", error);
-      } finally {
-        setLoading(false);
-      }
+      // Annuler l'abonnement lorsque le composant est démonté
+      return () => unsubscribe();
     };
 
     fetchVariations();
@@ -138,7 +143,7 @@ export default function CoursScreen() {
             }}
             width={screenWidth - 40}
             height={250}
-            yAxisLabel="$"
+            yAxisLabel="Ar "
             chartConfig={{
               backgroundColor: "#fff",
               backgroundGradientFrom: "#f7f7f7",

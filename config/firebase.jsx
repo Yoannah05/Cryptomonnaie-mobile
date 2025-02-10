@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, initializeAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, initializeAuth, GoogleAuthProvider, getReactNativePersistence  } from "firebase/auth";
 import { getDatabase, ref, set, get, child, update } from "firebase/database";  // Importation des fonctions Realtime Database
 
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
@@ -22,7 +22,7 @@ const db = getDatabase(app);
 
 // Initialize Auth
 const auth = initializeAuth(app, {
-  // persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+  persistence: getReactNativePersistence(ReactNativeAsyncStorage),
 });
 
 const googleProvider = new GoogleAuthProvider();

@@ -110,7 +110,7 @@ const FavoriteCryptosScreen = () => {
             <View style={styles.cryptoItem}>
               <View style={styles.cryptoInfo}>
                 <Text style={styles.cryptoName}>{item.nom}</Text>
-                <Text style={styles.cryptoValue}>{item.valeur_actuelle} USD</Text>
+                <Text style={styles.cryptoValue}>{item.valeur_actuelle} MGA</Text>
               </View>
               
               {/* 🔹 Icône de suppression */}
@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
+    paddingTop : 8,
     fontSize: 24,
     fontWeight: "bold",
     color: "#2F4F4F",
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
   },
   noFavorites: {
     textAlign: "center",
-    fontSize: 18,
+    fontSize: 16,
     color: "#777",
     marginTop: 30,
   },
